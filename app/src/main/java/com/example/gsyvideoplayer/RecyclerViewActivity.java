@@ -2,25 +2,23 @@ package com.example.gsyvideoplayer;
 
 
 import android.os.Build;
-import android.support.v7.app.AppCompatActivity;
+import androidx.appcompat.app.AppCompatActivity;
 import android.os.Bundle;
-import android.support.v7.widget.LinearLayoutManager;
-import android.support.v7.widget.RecyclerView;
 import android.transition.Explode;
 import android.view.Window;
 
-import com.example.gsyvideoplayer.adapter.ListNormalAdapter;
 import com.example.gsyvideoplayer.adapter.RecyclerBaseAdapter;
 import com.example.gsyvideoplayer.adapter.RecyclerNormalAdapter;
 
+import com.example.gsyvideoplayer.holder.RecyclerItemNormalHolder;
 import com.example.gsyvideoplayer.model.VideoModel;
 import com.shuyu.gsyvideoplayer.GSYVideoManager;
-import com.shuyu.gsyvideoplayer.GSYVideoPlayer;
-import com.shuyu.gsyvideoplayer.video.StandardGSYVideoPlayer;
 
 import java.util.ArrayList;
 import java.util.List;
 
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 
@@ -35,6 +33,7 @@ public class RecyclerViewActivity extends AppCompatActivity {
     RecyclerBaseAdapter recyclerBaseAdapter;
 
     List<VideoModel> dataList = new ArrayList<>();
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -74,12 +73,15 @@ public class RecyclerViewActivity extends AppCompatActivity {
                     //当前播放的位置
                     int position = GSYVideoManager.instance().getPlayPosition();
                     //对应的播放列表TAG
-                    if (GSYVideoManager.instance().getPlayTag().equals(ListNormalAdapter.TAG)
+                    if (GSYVideoManager.instance().getPlayTag().equals(RecyclerItemNormalHolder.TAG)
                             && (position < firstVisibleItem || position > lastVisibleItem)) {
 
                         //如果滑出去了上面和下面就是否，和今日头条一样
-                        GSYVideoPlayer.releaseAllVideos();
-                        recyclerNormalAdapter.notifyDataSetChanged();
+                        //是否全屏
+                        if(!GSYVideoManager.isFullState(RecyclerViewActivity.this)) {
+                            GSYVideoManager.releaseAllVideos();
+                            recyclerNormalAdapter.notifyDataSetChanged();
+                        }
                     }
                 }
             }
@@ -89,7 +91,7 @@ public class RecyclerViewActivity extends AppCompatActivity {
 
     @Override
     public void onBackPressed() {
-        if (StandardGSYVideoPlayer.backFromWindowFull(this)) {
+        if (GSYVideoManager.backFromWindowFull(this)) {
             return;
         }
         super.onBackPressed();
@@ -104,13 +106,13 @@ public class RecyclerViewActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
-        GSYVideoManager.onResume();
+        GSYVideoManager.onResume(false);
     }
 
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        GSYVideoPlayer.releaseAllVideos();
+        GSYVideoManager.releaseAllVideos();
     }
 
 
